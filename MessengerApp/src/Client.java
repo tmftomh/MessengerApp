@@ -1,84 +1,92 @@
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 public class Client extends JFrame {
 
+	private JPanel contentPane;
+	private JButton sendButton;
+	private JList userList;
 	private JTextField userText;
 	private JTextArea chatWindow;
-	private JList userList;
 	private ObjectOutputStream output;
 	private ObjectInputStream input;
 	private String message = "";
 	private String serverIP;
 	private Socket connection;
-
-	// constructor
+	
+	//temporary list of users
+	private String[] users = new String[2];
+	
 	public Client(String host) {
-		super("Instant Messager Version 1 (Client)");
-		setLayout(new GridBagLayout());
-		GridBagConstraints gc = new GridBagConstraints();
-		serverIP = host;
+		
+		setBounds(100, 100, 450, 300);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[]{0, 0, 0};
+		gbl_contentPane.rowHeights = new int[]{0, 0, 0};
+		gbl_contentPane.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		contentPane.setLayout(gbl_contentPane);
+		
+		//chat Window
+		chatWindow = new JTextArea();
+		GridBagConstraints gbc_textArea = new GridBagConstraints();
+		gbc_textArea.insets = new Insets(0, 0, 5, 5);
+		gbc_textArea.fill = GridBagConstraints.BOTH;
+		gbc_textArea.gridx = 0;
+		gbc_textArea.gridy = 0;
+		contentPane.add(chatWindow, gbc_textArea);
+		
+		//user List
+		userList = new JList(users);
+		// temporary list of users
+		users[0] = "test user 1";
+		users[1] = "test user 2";
+		
+		GridBagConstraints gbc_list = new GridBagConstraints();
+		gbc_list.insets = new Insets(0, 0, 5, 0);
+		gbc_list.fill = GridBagConstraints.BOTH;
+		gbc_list.gridx = 1;
+		gbc_list.gridy = 0;
+		contentPane.add(userList, gbc_list);
+		
+		//user Text
 		userText = new JTextField();
-		userText.setEditable(false);
-		userText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				 sendMessage(event.getActionCommand());
-				 userText.setText("");
+		GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.insets = new Insets(0, 0, 0, 5);
+		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField.gridx = 0;
+		gbc_textField.gridy = 1;
+		contentPane.add(userText, gbc_textField);
+		userText.setColumns(10);
+		userText.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent event){
+				sendMessage(event.getActionCommand());
+				userText.setText("");
 			}
 		});
-		chatWindow = new JTextArea();
-		setSize(640, 480);
-		setLocationRelativeTo(null);
 		
-		// Column One
+		//send button
+		sendButton = new JButton("Send");
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.gridx = 1;
+		gbc_btnNewButton.gridy = 1;
+		contentPane.add(sendButton, gbc_btnNewButton);
 		
-		gc.weightx = 0.5;
-		gc.weighty = 0.5;
-				
-		gc.gridx = 0;
-		gc.gridy = 0;
-		
-		gc.fill = GridBagConstraints.BOTH;
-		add(new JScrollPane(chatWindow), gc);
-		
-        // Row 2
-		
-		gc.weightx = 1;
-		gc.weighty = 0;
-		
-		gc.gridx = 0;
-		gc.gridy = 1;	
-		
-		add(userText, gc);
-		
-		// Column 2
-		
-		gc.gridx = 1;
-		gc.gridy = 0;
-		
-		add(userList, gc);
 		setVisible(true);
-		
 	}
 
 	public void startRunning() {
 
 		try {
+			
 			connectToServer(); // connect and have conversation
 			setupStreams();
 			whileChatting();
@@ -91,10 +99,11 @@ public class Client extends JFrame {
 		}
 	}
 
-	private void connectToServer() throws IOException{
+	private void connectToServer() throws IOException {
 		showMessage("Attempting connection... \n");
 		connection = new Socket(InetAddress.getByName(serverIP), 6789);
-		showMessage("Connected to: " + connection.getInetAddress().getHostName());
+		showMessage("Connected to: "
+				+ connection.getInetAddress().getHostName());
 	}
 
 	private void setupStreams() throws IOException {
@@ -114,7 +123,7 @@ public class Client extends JFrame {
 			} catch (ClassNotFoundException classNotFoundException) {
 				showMessage("\n Invalid message");
 			}
-		} while (!message.equals("SERVER - END"));
+		} while (!message.equals("CLIENT - END"));
 	}
 
 	// close streams and sockets after you are done chating
@@ -160,3 +169,4 @@ public class Client extends JFrame {
 	}
 
 }
+

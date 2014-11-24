@@ -80,7 +80,7 @@ public class Server extends JFrame{
             }catch(ClassNotFoundException classNotFoundException){
                 showMessage("\n Invalid message");
             }    
-        }while(!message.equals("CLIENT - END"));
+        }while(!message.equals("SERVER - END"));
     }
     
     //close streams and sockets after you are done chating
